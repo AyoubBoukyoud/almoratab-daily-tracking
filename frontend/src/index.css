@@ -1,0 +1,47 @@
+@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800&family=Lato:ital,wght@0,300;0,400;0,700;1,300;1,400&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --gold:        #C9982A;
+  --gold-light:  #E8BE5A;
+  --gold-pale:   #F5EDD4;
+  --teal:        #1A4D4A;
+  --teal-mid:    #246460;
+  --teal-light:  #2E7D79;
+  --cream:       #FAF6EE;
+  --dark:        #0F2A28;
+  --text:        #1C2B2A;
+  --muted:       #6B8280;
+  --border:      #D4C5A0;
+}
+
+body {
+  margin: 0;
+  background-color: var(--cream);
+  color: var(--text);
+  font-family: 'Lato', 'Cairo', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Beautiful custom scrollbars for brand context */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--cream);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--gold);
+}
