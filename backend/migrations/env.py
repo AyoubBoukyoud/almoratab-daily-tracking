@@ -4,7 +4,7 @@ import asyncio
 import socket
 from logging.config import fileConfig
 
-from sqlalchemy import pool
+from sqlalchemy import pool, create_engine
 from sqlalchemy.engine import Connection
 from sqlalchemy.ext.asyncio import create_async_engine
 
@@ -23,15 +23,16 @@ config = context.config
 # The DATABASE_URL is now fully processed in core/config.py
 base_url = settings.DATABASE_URL
 
-# For migrations, we MUST use port 5432 (direct connection) instead of 6543 (pooler)
-# because PgBouncer in transaction mode does not support prepared statements
-# or advisory locks required by Alembic.
-if ":6543/" in base_url:
-    base_url = base_url.replace(":6543/", ":5432/")
+# For migrations, we switch to sync engine (psycopg2) and port 5432
+# because it's much more stable with Supabase/PgBouncer.
+# psycopg2 uses client-side interpolation and port 5432 is session mode.
+sync_url = base_url.replace("postgresql+asyncpg://", "postgresql://")
+if ":6543/" in sync_url:
+    sync_url = sync_url.replace(":6543/", ":5432/")
 
 # Overwrite sqlalchemy url with config DATABASE_URL
 # Escape percent signs so ConfigParser doesn't break on URL-encoded passwords
-escaped_url = base_url.replace("%", "%%")
+escaped_url = sync_url.replace("%", "%%")
 config.set_main_option("sqlalchemy.url", escaped_url)
 
 # Interpret the config file for Python logging.
@@ -62,32 +63,19 @@ def do_run_migrations(connection: Connection) -> None:
         context.run_migrations()
 
 
-async def run_async_migrations() -> None:
-    """In this scenario we need to create an Engine
-    and associate a connection with the context.
+def run_migrations_online() -> None:
+    """Run migrations in 'online' mode.
+    We use a sync engine here to bypass asyncpg/PgBouncer issues.
     """
-    # Force SQLAlchemy to use IPv4 only to bypass Hugging Face IPv6 issues
-    # and disable statement cache for Supabase pooler compatibility
-    connectable = create_async_engine(
-        url=base_url,
+    connectable = create_engine(
+        sync_url,
         poolclass=pool.NullPool,
-        prepared_statement_cache_size=0,
-        connect_args={
-            "socket_keys": ["family"],
-            "family": socket.AF_INET,
-            "statement_cache_size": 0
-        }
     )
 
-    async with connectable.connect() as connection:
-        await connection.run_sync(do_run_migrations)
+    with connectable.connect() as connection:
+        do_run_migrations(connection)
 
-    await connectable.dispose()
-
-
-def run_migrations_online() -> None:
-    """Run migrations in 'online' mode."""
-    asyncio.run(run_async_migrations())
+    connectable.dispose()
 
 
 if context.is_offline_mode():
