@@ -1,4 +1,5 @@
 import os
+import socket
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 class Settings(BaseSettings):
@@ -32,5 +33,22 @@ class Settings(BaseSettings):
         if "ssl=" not in self.DATABASE_URL:
             separator = "&" if "?" in self.DATABASE_URL else "?"
             self.DATABASE_URL += f"{separator}ssl=true"
+
+        # 4. FORCE IPv4 RESOLUTION AT THE HOSTNAME LEVEL
+        try:
+            # Parse the URL to get the hostname
+            parts = self.DATABASE_URL.split("@")
+            if len(parts) > 1:
+                after_at = parts[1]
+                host_port = after_at.split("/")[0]
+                hostname = host_port.split(":")[0]
+                
+                # Resolve hostname to IPv4
+                ipv4_address = socket.gethostbyname(hostname)
+                
+                # Replace hostname with IP in the DATABASE_URL
+                self.DATABASE_URL = self.DATABASE_URL.replace(hostname, ipv4_address, 1)
+        except Exception:
+            pass
 
 settings = Settings()
