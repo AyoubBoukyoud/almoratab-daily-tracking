@@ -23,6 +23,12 @@ config = context.config
 # The DATABASE_URL is now fully processed in core/config.py
 base_url = settings.DATABASE_URL
 
+# For migrations, we MUST use port 5432 (direct connection) instead of 6543 (pooler)
+# because PgBouncer in transaction mode does not support prepared statements
+# or advisory locks required by Alembic.
+if ":6543/" in base_url:
+    base_url = base_url.replace(":6543/", ":5432/")
+
 # Overwrite sqlalchemy url with config DATABASE_URL
 # Escape percent signs so ConfigParser doesn't break on URL-encoded passwords
 escaped_url = base_url.replace("%", "%%")
