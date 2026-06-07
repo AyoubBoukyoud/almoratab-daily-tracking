@@ -3,9 +3,18 @@ from sqlalchemy.orm import declarative_base
 from typing import AsyncGenerator
 from .config import settings
 
+# Get URL from settings
+db_url = settings.DATABASE_URL
+
+# CRITICAL FIX: Double check sslmode for asyncpg compatibility
+if "sslmode=" in db_url:
+    db_url = db_url.replace("sslmode=require", "ssl=true")
+    db_url = db_url.replace("sslmode=prefer", "ssl=true")
+    db_url = db_url.replace("sslmode=disable", "ssl=false")
+
 # Create engine with async driver (asyncpg)
 engine = create_async_engine(
-    settings.DATABASE_URL,
+    db_url,
     echo=settings.APP_ENV == "development",
     future=True
 )

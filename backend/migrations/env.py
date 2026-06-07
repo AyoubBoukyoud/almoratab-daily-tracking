@@ -5,7 +5,7 @@ from logging.config import fileConfig
 
 from sqlalchemy import pool
 from sqlalchemy.engine import Connection
-from sqlalchemy.ext.asyncio import async_engine_from_config, create_async_engine
+from sqlalchemy.ext.asyncio import create_async_engine
 
 from alembic import context
 
@@ -21,6 +21,13 @@ config = context.config
 
 # The driver +asyncpg is now handled automatically in settings
 base_url = settings.DATABASE_URL
+
+# CRITICAL FIX: Ensure sslmode is converted to ssl for asyncpg
+# This handles the TypeError: connect() got an unexpected keyword argument 'sslmode'
+if "sslmode=" in base_url:
+    base_url = base_url.replace("sslmode=require", "ssl=true")
+    base_url = base_url.replace("sslmode=prefer", "ssl=true")
+    base_url = base_url.replace("sslmode=disable", "ssl=false")
 
 # Overwrite sqlalchemy url with config DATABASE_URL
 # Escape percent signs so ConfigParser doesn't break on URL-encoded passwords
