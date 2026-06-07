@@ -1,6 +1,7 @@
 import sys
 import os
 import asyncio
+import socket
 from logging.config import fileConfig
 
 from sqlalchemy import pool
@@ -59,10 +60,14 @@ async def run_async_migrations() -> None:
     """In this scenario we need to create an Engine
     and associate a connection with the context.
     """
-    # Force SQLAlchemy to use your correct, escaped, asynchronous URL directly
+    # Force SQLAlchemy to use IPv4 only to bypass Hugging Face IPv6 issues
     connectable = create_async_engine(
         url=base_url,
         poolclass=pool.NullPool,
+        connect_args={
+            "socket_keys": ["family"],
+            "family": socket.AF_INET
+        }
     )
 
     async with connectable.connect() as connection:
