@@ -65,6 +65,7 @@ async def run_async_migrations() -> None:
     connectable = create_async_engine(
         url=base_url,
         poolclass=pool.NullPool,
+        prepared_statement_cache_size=0,
         connect_args={
             "socket_keys": ["family"],
             "family": socket.AF_INET,
