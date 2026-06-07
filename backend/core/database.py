@@ -6,16 +6,8 @@ from .config import settings
 # Get URL from settings
 db_url = settings.DATABASE_URL
 
-# --- FORCE IPv4 RESOLUTION (Option 1 Proxy Trick) ---
-# This overrides the default socket connection to skip IPv6 entirely
-async def ipv4_only_connect(*args, **kwargs):
-    import asyncpg
-    # Force AF_INET (IPv4)
-    kwargs["family"] = socket.AF_INET
-    return await asyncpg.connect(*args, **kwargs)
-
 # Create engine with async driver (asyncpg)
-# We use connect_args to tell asyncpg to prioritize IPv4
+# We use connect_args to tell asyncpg to prioritize IPv4 and disable statement caching
 engine = create_async_engine(
     db_url,
     echo=settings.APP_ENV == "development",
@@ -23,7 +15,9 @@ engine = create_async_engine(
     connect_args={
         "socket_keys": ["family"],
         # This tells asyncpg to use IPv4 only
-        "family": socket.AF_INET
+        "family": socket.AF_INET,
+        # CRITICAL: Disable statement cache for Supabase/PgBouncer compatibility
+        "statement_cache_size": 0
     }
 )
 

@@ -61,12 +61,14 @@ async def run_async_migrations() -> None:
     and associate a connection with the context.
     """
     # Force SQLAlchemy to use IPv4 only to bypass Hugging Face IPv6 issues
+    # and disable statement cache for Supabase pooler compatibility
     connectable = create_async_engine(
         url=base_url,
         poolclass=pool.NullPool,
         connect_args={
             "socket_keys": ["family"],
-            "family": socket.AF_INET
+            "family": socket.AF_INET,
+            "statement_cache_size": 0
         }
     )
 
