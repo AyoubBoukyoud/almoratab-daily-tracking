@@ -22,14 +22,15 @@ class Settings(BaseSettings):
         if self.DATABASE_URL.startswith("postgresql://"):
             self.DATABASE_URL = self.DATABASE_URL.replace("postgresql://", "postgresql+asyncpg://", 1)
         
-        # 2. Clean up URL for asyncpg (strip problematic query params)
-        # asyncpg is very strict and will crash on 'sslmode'
-        if "?" in self.DATABASE_URL:
-            base, query = self.DATABASE_URL.split("?", 1)
-            # Filter out sslmode but keep other things if needed, 
-            # or just force secure SSL for production
-            self.DATABASE_URL = base + "?ssl=true"
-        else:
-            self.DATABASE_URL = self.DATABASE_URL + "?ssl=true"
+        # 2. Clean up URL for asyncpg (surgical replacement of sslmode)
+        if "sslmode=" in self.DATABASE_URL:
+            self.DATABASE_URL = self.DATABASE_URL.replace("sslmode=require", "ssl=true")
+            self.DATABASE_URL = self.DATABASE_URL.replace("sslmode=prefer", "ssl=true")
+            self.DATABASE_URL = self.DATABASE_URL.replace("sslmode=disable", "ssl=false")
+        
+        # 3. Ensure ssl=true is present for asyncpg if not already specified
+        if "ssl=" not in self.DATABASE_URL:
+            separator = "&" if "?" in self.DATABASE_URL else "?"
+            self.DATABASE_URL += f"{separator}ssl=true"
 
 settings = Settings()

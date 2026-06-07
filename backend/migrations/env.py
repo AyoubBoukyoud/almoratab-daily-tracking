@@ -19,15 +19,8 @@ from models import Base
 # access to the values within the .ini file in use.
 config = context.config
 
-# The driver +asyncpg is now handled automatically in settings
+# The DATABASE_URL is now fully processed in core/config.py
 base_url = settings.DATABASE_URL
-
-# CRITICAL FIX: Ensure sslmode is converted to ssl for asyncpg
-# This handles the TypeError: connect() got an unexpected keyword argument 'sslmode'
-if "sslmode=" in base_url:
-    base_url = base_url.replace("sslmode=require", "ssl=true")
-    base_url = base_url.replace("sslmode=prefer", "ssl=true")
-    base_url = base_url.replace("sslmode=disable", "ssl=false")
 
 # Overwrite sqlalchemy url with config DATABASE_URL
 # Escape percent signs so ConfigParser doesn't break on URL-encoded passwords
