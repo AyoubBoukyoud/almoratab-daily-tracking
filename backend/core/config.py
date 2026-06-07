@@ -18,8 +18,12 @@ class Settings(BaseSettings):
 
     def __init__(self, **values):
         super().__init__(**values)
-        # Automatically inject +asyncpg if missing
+        # 1. Automatically inject +asyncpg if missing
         if self.DATABASE_URL.startswith("postgresql://"):
             self.DATABASE_URL = self.DATABASE_URL.replace("postgresql://", "postgresql+asyncpg://", 1)
+        
+        # 2. Fix sslmode for asyncpg (it expects 'ssl' instead of 'sslmode')
+        if "sslmode=require" in self.DATABASE_URL:
+            self.DATABASE_URL = self.DATABASE_URL.replace("sslmode=require", "ssl=true")
 
 settings = Settings()
