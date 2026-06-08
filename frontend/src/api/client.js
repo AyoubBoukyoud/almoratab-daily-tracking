@@ -1,10 +1,16 @@
 import axios from 'axios';
 import { useAuthStore } from '../store/authStore';
 
+// In production, we use the relative path '/api' which is handled by Vercel Rewrites
+// In development, we use the explicit localhost URL
+const baseURL = import.meta.env.VITE_API_URL 
+  ? import.meta.env.VITE_API_URL 
+  : (import.meta.env.MODE === 'production' ? '/api' : 'http://localhost:8000');
+
 const client = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || (import.meta.env.PROD ? '/api' : 'http://localhost:8000'),
+  baseURL,
   headers: { 'Content-Type': 'application/json' },
-  withCredentials: true, // Crucial for sending/receiving HTTP-only cookies
+  withCredentials: true,
 });
 
 // Request interceptor: attach bearer token to headers
