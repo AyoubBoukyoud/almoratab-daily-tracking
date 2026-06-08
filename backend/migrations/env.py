@@ -3,6 +3,7 @@ import os
 import asyncio
 import socket
 from logging.config import fileConfig
+from urllib.parse import urlparse, urlunparse, parse_qs, urlencode
 
 from sqlalchemy import pool, create_engine
 from sqlalchemy.engine import Connection
@@ -29,6 +30,32 @@ base_url = settings.DATABASE_URL
 sync_url = base_url.replace("postgresql+asyncpg://", "postgresql://")
 if ":6543/" in sync_url:
     sync_url = sync_url.replace(":6543/", ":5432/")
+
+# CLEANUP: Remove asyncpg-specific parameters that psycopg2 doesn't support
+# and convert ssl=true to sslmode=require
+def clean_sync_url(url: str) -> str:
+    try:
+        parsed = urlparse(url)
+        query = parse_qs(parsed.query)
+        
+        # Remove asyncpg-specific params
+        for key in ["prepared_statement_cache_size", "statement_cache_size"]:
+            query.pop(key, None)
+        
+        # Convert ssl=true to sslmode=require for psycopg2
+        if "ssl" in query:
+            ssl_val = query.pop("ssl")[0]
+            if ssl_val == "true":
+                query["sslmode"] = ["require"]
+            elif ssl_val == "false":
+                query["sslmode"] = ["disable"]
+        
+        new_query = urlencode(query, doseq=True)
+        return urlunparse(parsed._replace(query=new_query))
+    except Exception:
+        return url
+
+sync_url = clean_sync_url(sync_url)
 
 # Overwrite sqlalchemy url with config DATABASE_URL
 # Escape percent signs so ConfigParser doesn't break on URL-encoded passwords

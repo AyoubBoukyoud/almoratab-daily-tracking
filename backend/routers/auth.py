@@ -31,8 +31,8 @@ async def login(
         max_age=cookie_expires,
         expires=cookie_expires,
         secure=settings.APP_ENV == "production",
-        samesite="lax",
-        path="/auth" # Limit cookie access to the auth routes
+        samesite="none" if settings.APP_ENV == "production" else "lax",
+        path="/"
     )
     return token_response
 
@@ -84,7 +84,7 @@ async def refresh_token(
 
 @router.post("/logout")
 async def logout(response: Response, current_user: User = Depends(get_current_user)):
-    response.delete_cookie(key="refresh_token", path="/auth")
+    response.delete_cookie(key="refresh_token", path="/")
     return {"detail": "Logged out successfully"}
 
 @router.post("/register", response_model=UserOut, dependencies=[Depends(require_admin)])

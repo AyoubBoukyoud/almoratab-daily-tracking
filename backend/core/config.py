@@ -1,5 +1,6 @@
 import os
 import socket
+from urllib.parse import urlparse, urlunparse
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 class Settings(BaseSettings):
@@ -19,36 +20,52 @@ class Settings(BaseSettings):
 
     def __init__(self, **values):
         super().__init__(**values)
-        # 1. Automatically inject +asyncpg if missing
-        if self.DATABASE_URL.startswith("postgresql://"):
-            self.DATABASE_URL = self.DATABASE_URL.replace("postgresql://", "postgresql+asyncpg://", 1)
-        
-        # 2. Clean up URL for asyncpg (surgical replacement of sslmode)
-        if "sslmode=" in self.DATABASE_URL:
-            self.DATABASE_URL = self.DATABASE_URL.replace("sslmode=require", "ssl=true")
-            self.DATABASE_URL = self.DATABASE_URL.replace("sslmode=prefer", "ssl=true")
-            self.DATABASE_URL = self.DATABASE_URL.replace("sslmode=disable", "ssl=false")
-        
-        # 3. Ensure ssl=true is present for asyncpg if not already specified
-        if "ssl=" not in self.DATABASE_URL:
-            separator = "&" if "?" in self.DATABASE_URL else "?"
-            self.DATABASE_URL += f"{separator}ssl=true"
+        self.DATABASE_URL = self._process_db_url(self.DATABASE_URL)
 
-        # 4. FORCE IPv4 RESOLUTION AT THE HOSTNAME LEVEL
+    def _process_db_url(self, url: str) -> str:
+        # 1. Ensure scheme is correct
+        if url.startswith("postgresql://"):
+            url = url.replace("postgresql://", "postgresql+asyncpg://", 1)
+        
         try:
-            # Parse the URL to get the hostname
-            parts = self.DATABASE_URL.split("@")
-            if len(parts) > 1:
-                after_at = parts[1]
-                host_port = after_at.split("/")[0]
-                hostname = host_port.split(":")[0]
-                
-                # Resolve hostname to IPv4
-                ipv4_address = socket.gethostbyname(hostname)
-                
-                # Replace hostname with IP in the DATABASE_URL
-                self.DATABASE_URL = self.DATABASE_URL.replace(hostname, ipv4_address, 1)
+            parsed = urlparse(url)
+            
+            # 2. Aggressively strip ALL query parameters
+            # We will pass necessary parameters (like ssl and statement_cache_size) 
+            # explicitly in core/database.py via connect_args. 
+            # This prevents any 'sslmode' or other incompatible strings from reaching asyncpg.
+            parsed = parsed._replace(query="")
+            
+            # 3. Handle IPv4 Resolution
+            hostname = parsed.hostname
+            if hostname:
+                try:
+                    ipv4_address = socket.gethostbyname(hostname)
+                    new_netloc = ipv4_address
+                    if parsed.port:
+                        new_netloc = f"{ipv4_address}:{parsed.port}"
+                    if parsed.username:
+                        auth = parsed.username
+                        if parsed.password:
+                            auth = f"{auth}:{parsed.password}"
+                        new_netloc = f"{auth}@{new_netloc}"
+                    
+                    parsed = parsed._replace(netloc=new_netloc)
+                except Exception:
+                    pass
+            
+            # 4. Clean up environment for asyncpg
+            # Some cloud environments set invalid PGSSLMODE values.
+            if "PGSSLMODE" in os.environ:
+                val = os.environ["PGSSLMODE"]
+                valid_sslmodes = ["disable", "allow", "prefer", "require", "verify-ca", "verify-full"]
+                if val not in valid_sslmodes:
+                    # Force to a valid value if it's something like 'true'
+                    os.environ["PGSSLMODE"] = "require"
+
+            return urlunparse(parsed)
+            
         except Exception:
-            pass
+            return url
 
 settings = Settings()
