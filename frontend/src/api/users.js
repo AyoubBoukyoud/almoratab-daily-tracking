@@ -1,9 +1,10 @@
 import client from './client';
 
-export const getMe = async () => {
-  const response = await client.get('/users/me');
+export const getUsers = async () => {
+  const response = await client.get('/users/');
   return response.data;
 };
+
 
 export const getMyStats = async () => {
   const response = await client.get('/users/me/stats');

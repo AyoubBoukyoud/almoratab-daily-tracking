@@ -1,7 +1,7 @@
 import client from './client';
 
 export const getSprints = async () => {
-  const response = await client.get('/sprints');
+  const response = await client.get('/sprints/');
   return response.data;
 };
 
