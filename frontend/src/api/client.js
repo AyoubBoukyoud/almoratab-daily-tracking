@@ -44,6 +44,11 @@ client.interceptors.response.use(
   (response) => response,
   async (error) => {
     const originalRequest = error.config;
+    
+    // Log auth errors for debugging in production
+    if (error.response?.status === 401) {
+      console.warn(`[Auth Error] 401 Unauthorized for: ${originalRequest.url}`, error.response.data);
+    }
 
     // If 401 and we haven't retried yet and it's not a login/refresh attempt
     if (
