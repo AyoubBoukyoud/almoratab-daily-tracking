@@ -74,7 +74,7 @@ async def seed_data():
         
         print("--- SEEDING SPRINTS ---")
         sprint_objects = []
-        for i in range(4):
+        for i in range(5):
             s_num = i + 1
             start = sprint1_start + timedelta(days=i * 14)
             end = start + timedelta(days=13)

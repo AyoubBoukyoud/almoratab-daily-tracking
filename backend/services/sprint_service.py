@@ -23,7 +23,7 @@ async def get_sprint_for_date(db: AsyncSession, query_date: date) -> Sprint:
     return sprint
 
 def is_submission_allowed(submission_date: date) -> bool:
-    """Saturday is rest day for testing. Python date.weekday() returns 5 for Saturday."""
-    if submission_date.weekday() == 5:
+    """Sunday is rest day. Python date.weekday() returns 6 for Sunday."""
+    if submission_date.weekday() == 6:
         return False
     return True
