@@ -187,7 +187,7 @@ export default function UserDashboard() {
           </div>
           
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {allSprints.map((sprint) => (
+            {(Array.isArray(allSprints) ? allSprints : []).map((sprint) => (
               <SprintLeaderboard 
                 key={sprint.id}
                 sprintId={sprint.id}
