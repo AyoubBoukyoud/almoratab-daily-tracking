@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.middleware.proxy_headers import ProxyHeadersMiddleware
+from starlette.middleware.proxy_headers import ProxyHeadersMiddleware
 from core.config import settings
 
 from routers import auth_router, tasks_router, users_router, sprints_router, admin_router
@@ -12,6 +12,7 @@ app = FastAPI(
 )
 
 # Handle proxy headers (for HTTPS)
+# Starlette (which FastAPI is built on) provides this.
 app.add_middleware(ProxyHeadersMiddleware, trusted_hosts="*")
 
 # CORS configuration
