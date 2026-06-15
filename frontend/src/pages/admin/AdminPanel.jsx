@@ -1,34 +1,40 @@
 import { useState, useEffect } from 'react';
 import { AdminLayout } from '../../components/layout/AdminLayout';
 import { getLeaderboard, getLiveSessions, validateLiveAttendance } from '../../api/admin';
+import { getSprints } from '../../api/sprints';
+import { SprintLeaderboard } from '../../components/ui/SprintLeaderboard';
 import { Link } from 'react-router-dom';
 import { toast } from 'react-hot-toast';
 
 export default function AdminPanel() {
   const [users, setUsers] = useState([]);
   const [liveSessions, setLiveSessions] = useState([]);
+  const [sprints, setSprints] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [validatingId, setValidatingId] = useState(null);
-
-  useEffect(() => {
-    fetchData();
-  }, []);
 
   const fetchData = async () => {
     setIsLoading(true);
     try {
-      const [leaderboardData, sessionsData] = await Promise.all([
+      const [leaderboardData, sessionsData, sprintsData] = await Promise.all([
         getLeaderboard(),
-        getLiveSessions()
+        getLiveSessions(),
+        getSprints()
       ]);
       setUsers(leaderboardData);
       setLiveSessions(sessionsData);
-    } catch (error) {
+      setSprints(sprintsData);
+    } catch (err) {
+      console.error(err);
       toast.error("Failed to load admin data");
     } finally {
       setIsLoading(false);
     }
   };
+
+  useEffect(() => {
+    fetchData();
+  }, []);
 
   const handleValidate = async (sessionId, userId) => {
     setValidatingId(`${sessionId}-${userId}`);
@@ -56,13 +62,13 @@ export default function AdminPanel() {
   return (
     <AdminLayout>
       <div className="space-y-10">
-        {/* Leaderboard Section */}
+        {/* Global Leaderboard Section */}
         <section className="bg-white rounded-2xl shadow-sm border border-brand-border/20 overflow-hidden">
           <div className="bg-brand-teal px-6 py-4 flex justify-between items-center">
             <h2 className="text-white font-playfair font-bold text-lg flex items-center gap-2">
-              <span className="text-xl">📊</span> Leaderboard
+              <span className="text-xl">📊</span> Global Leaderboard
             </h2>
-            <span className="text-brand-gold-pale/60 text-xs font-medium uppercase tracking-widest">Global Ranking</span>
+            <span className="text-brand-gold-pale/60 text-xs font-medium uppercase tracking-widest">Cumulative Scores</span>
           </div>
           
           <div className="overflow-x-auto">
@@ -113,6 +119,25 @@ export default function AdminPanel() {
                 ))}
               </tbody>
             </table>
+          </div>
+        </section>
+
+        {/* Per-Sprint Leaderboards Section */}
+        <section className="space-y-6">
+          <div className="flex items-center gap-3">
+            <h2 className="text-2xl font-playfair font-bold text-brand-dark">Sprint Leaderboards</h2>
+            <div className="h-px flex-1 bg-brand-border/20"></div>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {sprints.map((sprint) => (
+              <SprintLeaderboard 
+                key={sprint.id}
+                sprintId={sprint.id}
+                sprintNumber={sprint.sprint_number}
+                isCurrent={sprint.is_active}
+              />
+            ))}
           </div>
         </section>
 

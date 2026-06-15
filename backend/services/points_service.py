@@ -1,13 +1,19 @@
 from uuid import UUID
 from datetime import date
-from sqlalchemy import select, func
+from sqlalchemy import select, func, and_
 from sqlalchemy.ext.asyncio import AsyncSession
 from models.user import User
 from models.sprint import Sprint
 from models.task_submission import TaskSubmission
 from models.live_session import LiveSession
 from models.live_attendance import LiveAttendance
-from schemas.admin import LeaderboardEntry, UserSprintStats, UserProgressOut, ProgressChartEntry
+from schemas.admin import (
+    LeaderboardEntry, 
+    UserSprintStats, 
+    UserProgressOut, 
+    ProgressChartEntry, 
+    SprintLeaderboardEntry
+)
 from typing import List
 from .sprint_service import get_sprint_for_date
 
@@ -56,8 +62,8 @@ async def get_user_sprint_stats(db: AsyncSession, user_id: UUID, sprint: Sprint)
     )
 
 async def get_leaderboard(db: AsyncSession) -> List[LeaderboardEntry]:
-    # Query all users with role 'user'
-    result = await db.execute(select(User).where(User.role == "user"))
+    # Query all users with role 'user' or 'superUser'
+    result = await db.execute(select(User).where(User.role.in_(["user", "superUser"])))
     users = result.scalars().all()
 
     leaderboard = []
@@ -74,6 +80,32 @@ async def get_leaderboard(db: AsyncSession) -> List[LeaderboardEntry]:
 
     # Sort descending by total_points, ties broken alphabetically by full_name
     leaderboard.sort(key=lambda x: (-x.total_points, x.full_name))
+    return leaderboard
+
+async def get_sprint_leaderboard(db: AsyncSession, sprint_id: UUID) -> List[SprintLeaderboardEntry]:
+    # 1. Get the sprint
+    res = await db.execute(select(Sprint).where(Sprint.id == sprint_id))
+    sprint = res.scalar_one_or_none()
+    if not sprint:
+        return []
+
+    # 2. Query all users (user + superUser)
+    res = await db.execute(select(User).where(User.role.in_(["user", "superUser"])))
+    users = res.scalars().all()
+
+    leaderboard = []
+    for user in users:
+        stats = await get_user_sprint_stats(db, user.id, sprint)
+        leaderboard.append(
+            SprintLeaderboardEntry(
+                id=user.id,
+                full_name=user.full_name,
+                sprint_points=stats.total
+            )
+        )
+
+    # 3. Sort descending by points
+    leaderboard.sort(key=lambda x: (-x.sprint_points, x.full_name))
     return leaderboard
 
 async def get_user_progress_detail(db: AsyncSession, user: User) -> UserProgressOut:

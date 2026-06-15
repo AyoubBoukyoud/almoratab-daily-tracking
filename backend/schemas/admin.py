@@ -9,6 +9,11 @@ class LeaderboardEntry(BaseModel):
     email: EmailStr
     total_points: int
 
+class SprintLeaderboardEntry(BaseModel):
+    id: UUID
+    full_name: str
+    sprint_points: int
+
 class UserSprintStats(BaseModel):
     sprint_number: int
     task_points: int

@@ -58,15 +58,20 @@ async def seed_data():
             plain_password = f"{username}{rand_digits}"
             hashed_pass = hash_password(plain_password)
 
+            # Assign superUser role to specific users
+            role = "user"
+            if user_data["full_name"] in ["Bouchra Salil", "Fairouz Massaly"]:
+                role = "superUser"
+
             user = User(
                 full_name=user_data["full_name"],
                 email=user_data["email"],
                 hashed_password=hashed_pass,
-                role="user"
+                role=role
             )
             session.add(user)
             seeded_users.append(user)
-            print(f"Seeding user  -> Name: {user_data['full_name']} | Email: {user_data['email']} | Password: {plain_password}")
+            print(f"Seeding user  -> Name: {user_data['full_name']} | Role: {role} | Email: {user_data['email']} | Password: {plain_password}")
 
         # 3. Seed Sprints (6 sprints of 14 days each, Monday-Sunday)
         # We start Sprint 1 on 2026-06-15 (Monday)

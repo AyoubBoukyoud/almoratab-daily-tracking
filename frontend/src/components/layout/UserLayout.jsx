@@ -3,7 +3,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import logo from '../../assets/logo.png';
 
 export function UserLayout({ children }) {
-  const { user, clearAuth } = useAuthStore();
+  const { user, role, clearAuth } = useAuthStore();
   const navigate = useNavigate();
 
   const handleLogout = () => {
@@ -17,6 +17,8 @@ export function UserLayout({ children }) {
     month: 'long', 
     day: 'numeric' 
   });
+
+  const canAccessAdmin = role === 'admin' || role === 'superUser';
 
   return (
     <div className="min-h-screen bg-brand-cream font-lato">
@@ -35,9 +37,19 @@ export function UserLayout({ children }) {
           </div>
           
           <div className="flex items-center gap-4">
+            {canAccessAdmin && (
+              <Link 
+                to="/admin"
+                className="hidden md:flex items-center gap-1 px-3 py-1 bg-brand-gold text-brand-dark rounded-md text-xs font-black uppercase transition-transform hover:scale-105"
+              >
+                <span>⚙️</span> Admin Panel
+              </Link>
+            )}
             <div className="text-right hidden sm:block">
-              <p className="text-xs text-brand-gold-pale/70 uppercase tracking-tighter">Learner</p>
-              <p className="text-sm font-bold">Bonjour, {user?.full_name || 'User'} 👋</p>
+              <p className="text-xs text-brand-gold-pale/70 uppercase tracking-tighter">
+                {role === 'superUser' ? 'Super User' : 'Learner'}
+              </p>
+              <p className="text-sm font-bold">Bonjour, {user?.full_name?.split(' ')[0] || 'User'} 👋</p>
             </div>
             <button 
               onClick={handleLogout}

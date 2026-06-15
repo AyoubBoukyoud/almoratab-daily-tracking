@@ -3,32 +3,36 @@ import { UserLayout } from '../components/layout/UserLayout';
 import { PointsRing } from '../components/ui/PointsRing';
 import { TaskCard } from '../components/ui/TaskCard';
 import { SprintBar } from '../components/ui/SprintBar';
+import { SprintLeaderboard } from '../components/ui/SprintLeaderboard';
 import { getTodayStatus, submitTasks } from '../api/tasks';
 import { getMyStats } from '../api/users';
+import { getSprints, getCurrentSprint } from '../api/sprints';
 import { toast } from 'react-hot-toast';
 
 export default function UserDashboard() {
   const [stats, setStats] = useState(null);
   const [todaySub, setTodaySub] = useState({ submitted: false, submission: null });
+  const [currentSprint, setCurrentSprint] = useState(null);
+  const [allSprints, setAllSprints] = useState([]);
   const [tasks, setTasks] = useState({ task1: false, task2: false, task3: false });
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const isSunday = new Date().getDay() === 0;
 
-  useEffect(() => {
-    fetchData();
-  }, []);
-
   const fetchData = async () => {
     setIsLoading(true);
     try {
-      const [statsData, todayData] = await Promise.all([
+      const [statsData, todayData, sprintData, allSprintsData] = await Promise.all([
         getMyStats(),
-        getTodayStatus()
+        getTodayStatus(),
+        getCurrentSprint(),
+        getSprints()
       ]);
       setStats(statsData);
       setTodaySub(todayData);
+      setCurrentSprint(sprintData);
+      setAllSprints(allSprintsData);
       
       if (todayData.submitted) {
         setTasks({
@@ -44,6 +48,10 @@ export default function UserDashboard() {
       setIsLoading(false);
     }
   };
+
+  useEffect(() => {
+    fetchData();
+  }, []);
 
   const handleSubmit = async () => {
     if (!tasks.task1 && !tasks.task2 && !tasks.task3) {
@@ -110,7 +118,7 @@ export default function UserDashboard() {
               description="Planifier et structurer ma journée"
               checked={tasks.task1}
               onChange={(val) => setTasks(prev => ({ ...prev, task1: val }))}
-              disabled={new Date().getDay() === 6 || todaySub.submitted || isSubmitting}
+              disabled={new Date().getDay() === 0 || todaySub.submitted || isSubmitting}
             />
             <TaskCard 
               taskNumber={2}
@@ -119,7 +127,7 @@ export default function UserDashboard() {
               description="Renforcer mon énergie et ma Discipline"
               checked={tasks.task2}
               onChange={(val) => setTasks(prev => ({ ...prev, task2: val }))}
-              disabled={new Date().getDay() === 6 || todaySub.submitted || isSubmitting}
+              disabled={new Date().getDay() === 0 || todaySub.submitted || isSubmitting}
             />
             <TaskCard 
               taskNumber={3}
@@ -128,11 +136,11 @@ export default function UserDashboard() {
               description="Créer une avancée concrète dans mon projet"
               checked={tasks.task3}
               onChange={(val) => setTasks(prev => ({ ...prev, task3: val }))}
-              disabled={new Date().getDay() === 6 || todaySub.submitted || isSubmitting}
+              disabled={new Date().getDay() === 0 || todaySub.submitted || isSubmitting}
             />
           </div>
 
-          {!todaySub.submitted && new Date().getDay() !== 6 && (
+          {!todaySub.submitted && new Date().getDay() !== 0 && (
             <button
               onClick={handleSubmit}
               disabled={isSubmitting}
@@ -149,7 +157,7 @@ export default function UserDashboard() {
             </div>
           )}
 
-          {new Date().getDay() === 6 && !todaySub.submitted && (
+          {new Date().getDay() === 0 && !todaySub.submitted && (
             <div className="p-4 bg-brand-gold/10 border border-brand-gold/20 text-brand-teal rounded-xl text-center italic">
               "Take a break, recharge your energy. Submissions resume on Monday!"
             </div>
@@ -165,7 +173,26 @@ export default function UserDashboard() {
                 key={idx}
                 sprintNumber={sprint.sprint_number}
                 points={sprint.total}
-                isActive={idx + 1 === (stats?.current_sprint_number || 1)}
+                isActive={sprint.sprint_number === (stats?.current_sprint_number || 1)}
+              />
+            ))}
+          </div>
+        </section>
+
+        {/* Motivation Board */}
+        <section className="space-y-6">
+          <div className="flex items-center gap-3">
+            <h2 className="text-xl font-playfair font-bold text-brand-dark">Sprint Leaderboards</h2>
+            <div className="h-px flex-1 bg-brand-border/20"></div>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {allSprints.map((sprint) => (
+              <SprintLeaderboard 
+                key={sprint.id}
+                sprintId={sprint.id}
+                sprintNumber={sprint.sprint_number}
+                isCurrent={sprint.id === currentSprint?.id}
               />
             ))}
           </div>

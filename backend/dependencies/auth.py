@@ -49,3 +49,13 @@ async def require_admin(
             detail="Admin access required"
         )
     return current_user
+
+async def require_elevated_privilege(
+    current_user: User = Depends(get_current_user)
+) -> User:
+    if current_user.role not in ["admin", "superUser"]:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Elevated privilege required"
+        )
+    return current_user

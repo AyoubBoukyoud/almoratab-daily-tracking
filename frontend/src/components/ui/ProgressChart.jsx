@@ -1,4 +1,4 @@
-import { LineChart, Line, XAxis, YAxis, Tooltip, CartesianGrid, ResponsiveContainer, ReferenceLine, Area, ComposedChart } from 'recharts';
+import { Line, XAxis, YAxis, Tooltip, CartesianGrid, ResponsiveContainer, ReferenceLine, Area, ComposedChart } from 'recharts';
 
 export function ProgressChart({ data }) {
   // data: [{ date: "2026-06-02", cumulative_points: 6 }, ...]
@@ -28,7 +28,7 @@ export function ProgressChart({ data }) {
     try {
       const d = new Date(dateStr);
       return d.toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' });
-    } catch (e) {
+    } catch {
       return dateStr;
     }
   };

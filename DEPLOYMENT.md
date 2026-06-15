@@ -61,3 +61,4 @@ python seeds/seed_users.py
 ## 🔒 Security Reminders
 1. **CORS:** Ensure the `FRONTEND_URL` in your Render environment variables matches your actual frontend domain exactly (no trailing slash).
 2. **Secure Cookies:** Setting `APP_ENV=production` automatically enables `Secure` and `SameSite=None` flags for your JWT refresh cookies, which is required for HTTPS.
+

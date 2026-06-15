@@ -12,10 +12,6 @@ export default function UserDetail() {
   const [history, setHistory] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  useEffect(() => {
-    fetchData();
-  }, [userId]);
-
   const fetchData = async () => {
     setIsLoading(true);
     try {
@@ -27,12 +23,17 @@ export default function UserDetail() {
       setUser(userData);
       setChartData(chartRes);
       setHistory(historyRes);
-    } catch (error) {
+    } catch (err) {
+      console.error(err);
       toast.error("Failed to load user details");
     } finally {
       setIsLoading(false);
     }
   };
+
+  useEffect(() => {
+    fetchData();
+  }, [userId]);
 
   if (isLoading) {
     return (

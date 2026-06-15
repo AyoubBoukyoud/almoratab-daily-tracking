@@ -15,19 +15,19 @@ export default function App() {
         
         {/* User Routes */}
         <Route path="/dashboard" element={
-          <ProtectedRoute>
+          <ProtectedRoute requiredRole={["user", "superUser"]}>
             <UserDashboard />
           </ProtectedRoute>
         } />
         
         {/* Admin Routes */}
         <Route path="/admin" element={
-          <ProtectedRoute requiredRole="admin">
+          <ProtectedRoute requiredRole={["admin", "superUser"]}>
             <AdminPanel />
           </ProtectedRoute>
         } />
         <Route path="/admin/users/:userId" element={
-          <ProtectedRoute requiredRole="admin">
+          <ProtectedRoute requiredRole={["admin", "superUser"]}>
             <UserDetail />
           </ProtectedRoute>
         } />

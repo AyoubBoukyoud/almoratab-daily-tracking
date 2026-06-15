@@ -51,7 +51,7 @@ async def submit_tasks(
     points_earned = 0
     if payload.task1_done: points_earned += 2
     if payload.task2_done: points_earned += 2
-    if payload.task3_done: points_earned += 3
+    if payload.task3_done: points_earned += 2
 
     # 5. Create submission record
     submission = TaskSubmission(

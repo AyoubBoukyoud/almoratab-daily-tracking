@@ -16,9 +16,12 @@ export function ProtectedRoute({ children, requiredRole }) {
     return <Navigate to="/login" replace />;
   }
 
-  if (requiredRole && role !== requiredRole) {
-    // If admin is trying to access user page or vice versa
-    if (role === 'admin') {
+  // Handle multiple roles if requiredRole is an array
+  const roles = Array.isArray(requiredRole) ? requiredRole : [requiredRole];
+
+  if (requiredRole && !roles.includes(role)) {
+    // If admin or superUser is trying to access user page or vice-versa
+    if (role === 'admin' || role === 'superUser') {
       return <Navigate to="/admin" replace />;
     }
     return <Navigate to="/dashboard" replace />;

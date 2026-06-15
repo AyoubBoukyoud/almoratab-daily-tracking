@@ -3,7 +3,7 @@ import { useNavigate, Link, useLocation } from 'react-router-dom';
 import logo from '../../assets/logo.png';
 
 export function AdminLayout({ children }) {
-  const { user, clearAuth } = useAuthStore();
+  const { user, role, clearAuth } = useAuthStore();
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -37,7 +37,9 @@ export function AdminLayout({ children }) {
           
           <div className="flex items-center gap-4">
             <div className="text-right hidden sm:block">
-              <p className="text-[10px] text-brand-gold uppercase tracking-widest font-bold">Admin Console</p>
+              <p className="text-[10px] text-brand-gold uppercase tracking-widest font-bold">
+                {role === 'superUser' ? 'Super User View' : 'Admin Console'}
+              </p>
               <p className="text-sm font-medium">{user?.full_name || 'Administrator'}</p>
             </div>
             <button 
