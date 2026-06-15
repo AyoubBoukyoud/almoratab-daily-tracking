@@ -105,31 +105,34 @@ export default function UserDashboard() {
           <div className="grid grid-cols-1 gap-3">
             <TaskCard 
               taskNumber={1}
-              emoji="📖"
-              label="Daily Reading / Learning"
+              emoji="📓"
+              label="My Daily (Organisation)"
+              description="Planifier et structurer ma journée"
               checked={tasks.task1}
               onChange={(val) => setTasks(prev => ({ ...prev, task1: val }))}
-              disabled={isSunday || todaySub.submitted || isSubmitting}
+              disabled={new Date().getDay() === 6 || todaySub.submitted || isSubmitting}
             />
             <TaskCard 
               taskNumber={2}
               emoji="🏃"
-              label="Physical Activity / Sport"
+              label="My Physical Activity (Discipline)"
+              description="Renforcer mon énergie et ma Discipline"
               checked={tasks.task2}
               onChange={(val) => setTasks(prev => ({ ...prev, task2: val }))}
-              disabled={isSunday || todaySub.submitted || isSubmitting}
+              disabled={new Date().getDay() === 6 || todaySub.submitted || isSubmitting}
             />
             <TaskCard 
               taskNumber={3}
-              emoji="💡"
-              label="Project Contribution"
+              emoji="🚀"
+              label="My Project Contribution (Progression)"
+              description="Créer une avancée concrète dans mon projet"
               checked={tasks.task3}
               onChange={(val) => setTasks(prev => ({ ...prev, task3: val }))}
-              disabled={isSunday || todaySub.submitted || isSubmitting}
+              disabled={new Date().getDay() === 6 || todaySub.submitted || isSubmitting}
             />
           </div>
 
-          {!todaySub.submitted && !isSunday && (
+          {!todaySub.submitted && new Date().getDay() !== 6 && (
             <button
               onClick={handleSubmit}
               disabled={isSubmitting}
@@ -146,7 +149,7 @@ export default function UserDashboard() {
             </div>
           )}
 
-          {isSunday && !todaySub.submitted && (
+          {new Date().getDay() === 6 && !todaySub.submitted && (
             <div className="p-4 bg-brand-gold/10 border border-brand-gold/20 text-brand-teal rounded-xl text-center italic">
               "Take a break, recharge your energy. Submissions resume on Monday!"
             </div>

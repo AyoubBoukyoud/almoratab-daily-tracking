@@ -127,7 +127,7 @@ async def validate_live_attendance(
         user_id=user_id,
         live_session_id=session_id,
         validated_by=current_admin.id,
-        points_awarded=4
+        points_awarded=8
     )
     db.add(attendance)
     try:

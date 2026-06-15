@@ -4,6 +4,7 @@ import { useAuthStore } from '../store/authStore';
 import { login } from '../api/auth';
 import toast from 'react-hot-toast';
 import { Lock, Mail, Loader2, Eye, EyeOff } from 'lucide-react';
+import logo from '../assets/logo.png';
 
 export default function Login() {
   const [email, setEmail] = useState('');
@@ -51,9 +52,9 @@ export default function Login() {
         
         {/* Branding & Header */}
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-20 h-20 rounded-2xl bg-gradient-to-br from-brand-gold to-brand-gold-light p-0.5 shadow-lg shadow-brand-gold/20 mb-4 animate-pulse">
-            <div className="w-full h-full bg-brand-dark rounded-[14px] flex items-center justify-center text-brand-gold font-bold text-2xl">
-              AM
+          <div className="inline-flex items-center justify-center w-20 h-20 rounded-2xl bg-gradient-to-br from-brand-gold to-brand-gold-light p-0.5 shadow-lg shadow-brand-gold/20 mb-4">
+            <div className="w-full h-full bg-white rounded-[14px] flex items-center justify-center p-2">
+              <img src={logo} alt="Logo" className="w-full h-full object-contain" />
             </div>
           </div>
           <h1 className="font-playfair text-brand-gold text-3xl font-bold tracking-wide">

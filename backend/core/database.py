@@ -8,28 +8,27 @@ from .config import settings
 # Get URL from settings (which is now stripped of all query params)
 db_url = settings.DATABASE_URL
 
-# Create a custom SSL context that enables encryption but skips certificate verification.
-# This is necessary because some cloud environments (like Hugging Face) don't have
-# the root certificates required to verify Supabase/PgBouncer's SSL chain.
-ssl_context = ssl.create_default_context()
-ssl_context.check_hostname = False
-ssl_context.verify_mode = ssl.CERT_NONE
+# Use SSL only in non-development environments
+connect_args = {
+    # CRITICAL: Disable statement cache for Supabase/PgBouncer compatibility
+    "statement_cache_size": 0,
+    "prepared_statement_cache_size": 0
+}
+
+if settings.APP_ENV != "development":
+    # Create a custom SSL context that enables encryption but skips certificate verification.
+    ssl_context = ssl.create_default_context()
+    ssl_context.check_hostname = False
+    ssl_context.verify_mode = ssl.CERT_NONE
+    connect_args["ssl"] = ssl_context
 
 # Create engine with async driver (asyncpg)
-# We pass ALL driver-specific arguments explicitly in connect_args 
-# to avoid any incompatible parameters being passed from the DSN.
 engine = create_async_engine(
     db_url,
     echo=settings.APP_ENV == "development",
     future=True,
     poolclass=pool.NullPool,
-    connect_args={
-        # Use the custom SSL context
-        "ssl": ssl_context,
-        # CRITICAL: Disable statement cache for Supabase/PgBouncer compatibility
-        "statement_cache_size": 0,
-        "prepared_statement_cache_size": 0
-    }
+    connect_args=connect_args
 )
 
 # Async session factory

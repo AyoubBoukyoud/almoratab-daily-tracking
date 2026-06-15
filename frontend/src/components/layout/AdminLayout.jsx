@@ -1,5 +1,6 @@
 import { useAuthStore } from '../../store/authStore';
 import { useNavigate, Link, useLocation } from 'react-router-dom';
+import logo from '../../assets/logo.png';
 
 export function AdminLayout({ children }) {
   const { user, clearAuth } = useAuthStore();
@@ -17,8 +18,8 @@ export function AdminLayout({ children }) {
         <div className="max-w-6xl mx-auto px-4 py-3 flex justify-between items-center">
           <div className="flex items-center gap-6">
             <Link to="/admin" className="flex items-center gap-3">
-              <div className="w-8 h-8 rounded-full border border-brand-gold flex items-center justify-center bg-white/10">
-                 <span className="text-brand-gold font-playfair font-bold text-lg">A</span>
+              <div className="w-8 h-8 rounded-full border border-brand-gold flex items-center justify-center bg-white overflow-hidden">
+                 <img src={logo} alt="Logo" className="w-6 h-6 object-contain" />
               </div>
               <h1 className="font-playfair font-bold text-lg tracking-wide hidden sm:block">رحلة البزنس المرتب</h1>
             </Link>

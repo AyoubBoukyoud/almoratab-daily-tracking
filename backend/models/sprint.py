@@ -7,7 +7,7 @@ from .base import Base
 class Sprint(Base):
     __tablename__ = "sprints"
     __table_args__ = (
-        CheckConstraint("sprint_number BETWEEN 1 AND 5", name="sprint_number_range"),
+        CheckConstraint("sprint_number >= 1", name="sprint_number_positive"),
         CheckConstraint("end_date > start_date", name="valid_dates"),
     )
 
@@ -15,7 +15,7 @@ class Sprint(Base):
     sprint_number: Mapped[int] = mapped_column(Integer, unique=True, nullable=False)
     start_date: Mapped[date] = mapped_column(Date, nullable=False)
     end_date: Mapped[date] = mapped_column(Date, nullable=False)
-    is_active: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
+    is_active: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=datetime.utcnow, nullable=False)
 
     # Relationships

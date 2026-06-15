@@ -5,7 +5,7 @@ import { useAuthStore } from '../store/authStore';
 // In development, we use the explicit localhost URL
 const baseURL = import.meta.env.VITE_API_URL 
   ? import.meta.env.VITE_API_URL 
-  : (import.meta.env.MODE === 'production' ? '/api' : 'http://localhost:8000');
+  : (import.meta.env.MODE === 'production' ? '/api' : 'http://127.0.0.1:8000');
 
 const client = axios.create({
   baseURL,

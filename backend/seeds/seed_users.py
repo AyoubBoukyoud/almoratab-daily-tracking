@@ -68,22 +68,20 @@ async def seed_data():
             seeded_users.append(user)
             print(f"Seeding user  -> Name: {user_data['full_name']} | Email: {user_data['email']} | Password: {plain_password}")
 
-        # 3. Seed Sprints (5 sprints of 14 days each, Monday-Sunday)
-        # We base Sprint 3 around today (2026-06-04 is a Thursday in week 1 of Sprint 3 starting Monday 2026-06-01)
-        sprint3_start = date(2026, 6, 1) # Monday
-        sprint_ranges = [
-            (1, sprint3_start - timedelta(days=28), sprint3_start - timedelta(days=15)), # Sprint 1
-            (2, sprint3_start - timedelta(days=14), sprint3_start - timedelta(days=1)),  # Sprint 2
-            (3, sprint3_start, sprint3_start + timedelta(days=13)),                     # Sprint 3 (Active)
-            (4, sprint3_start + timedelta(days=14), sprint3_start + timedelta(days=27)), # Sprint 4
-            (5, sprint3_start + timedelta(days=28), sprint3_start + timedelta(days=41)), # Sprint 5
-        ]
-
+        # 3. Seed Sprints (6 sprints of 14 days each, Monday-Sunday)
+        # We start Sprint 1 on 2026-06-15 (Monday)
+        sprint1_start = date(2026, 6, 15) # Monday
+        
         print("--- SEEDING SPRINTS ---")
         sprint_objects = []
-        for s_num, start, end in sprint_ranges:
-            # Sprint 3 is active
-            is_active = (s_num == 3)
+        for i in range(4):
+            s_num = i + 1
+            start = sprint1_start + timedelta(days=i * 14)
+            end = start + timedelta(days=13)
+            
+            # Sprint 1 is active by default as requested
+            is_active = (s_num == 1)
+            
             sprint = Sprint(
                 sprint_number=s_num,
                 start_date=start,

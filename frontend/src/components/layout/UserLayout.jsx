@@ -1,5 +1,6 @@
 import { useAuthStore } from '../../store/authStore';
 import { useNavigate, Link } from 'react-router-dom';
+import logo from '../../assets/logo.png';
 
 export function UserLayout({ children }) {
   const { user, clearAuth } = useAuthStore();
@@ -10,21 +11,33 @@ export function UserLayout({ children }) {
     navigate('/login');
   };
 
+  const today = new Date().toLocaleDateString('fr-FR', { 
+    weekday: 'long', 
+    year: 'numeric', 
+    month: 'long', 
+    day: 'numeric' 
+  });
+
   return (
     <div className="min-h-screen bg-brand-cream font-lato">
       <header className="bg-brand-teal text-white shadow-lg">
         <div className="max-w-4xl mx-auto px-4 py-4 flex justify-between items-center">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full border-2 border-brand-gold flex items-center justify-center bg-white/10 overflow-hidden">
-               <span className="text-brand-gold font-playfair font-bold text-xl">A</span>
-            </div>
-            <h1 className="font-playfair font-bold text-xl md:text-2xl tracking-wide">رحلة البزنس المرتب</h1>
+            <Link to="/dashboard" className="flex items-center gap-3 group">
+              <div className="w-10 h-10 rounded-full border-2 border-brand-gold flex items-center justify-center bg-white overflow-hidden transition-transform group-hover:scale-110">
+                 <img src={logo} alt="Logo" className="w-8 h-8 object-contain" />
+              </div>
+              <div>
+                <h1 className="font-playfair font-bold text-xl md:text-2xl tracking-wide">رحلة البزنس المرتب</h1>
+                <p className="text-[10px] text-brand-gold-pale/60 font-medium uppercase tracking-widest">{today}</p>
+              </div>
+            </Link>
           </div>
           
           <div className="flex items-center gap-4">
             <div className="text-right hidden sm:block">
               <p className="text-xs text-brand-gold-pale/70 uppercase tracking-tighter">Learner</p>
-              <p className="text-sm font-bold">Bonjour, {user?.full_name?.split(' ')[0] || 'User'} 👋</p>
+              <p className="text-sm font-bold">Bonjour, {user?.full_name || 'User'} 👋</p>
             </div>
             <button 
               onClick={handleLogout}

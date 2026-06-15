@@ -34,7 +34,7 @@ export default function AdminPanel() {
     setValidatingId(`${sessionId}-${userId}`);
     try {
       await validateLiveAttendance(sessionId, userId);
-      toast.success("Attendance validated! +4 pts awarded");
+      toast.success("Attendance validated! +8 pts awarded");
       fetchData(); // Refresh everything
     } catch (error) {
       toast.error(error.response?.data?.detail || "Validation failed");

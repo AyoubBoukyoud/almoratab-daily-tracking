@@ -91,9 +91,38 @@ async def get_user_progress_detail(db: AsyncSession, user: User) -> UserProgress
     # Determine current sprint and day
     today = date.today()
     try:
-        current_sprint = await get_sprint_for_date(db, today)
-        current_sprint_number = current_sprint.sprint_number
-        current_day = (today - current_sprint.start_date).days + 1
+        # 1. Try date-based lookup
+        res = await db.execute(
+            select(Sprint).where(
+                and_(
+                    Sprint.start_date <= today,
+                    Sprint.end_date >= today
+                )
+            )
+        )
+        current_sprint = res.scalar_one_or_none()
+        
+        # 2. If not found by date, fallback to the one marked is_active
+        if not current_sprint:
+            res = await db.execute(select(Sprint).where(Sprint.is_active == True).limit(1))
+            current_sprint = res.scalar_one_or_none()
+            
+        # 3. Last fallback: first sprint
+        if not current_sprint:
+            res = await db.execute(select(Sprint).order_by(Sprint.sprint_number).limit(1))
+            current_sprint = res.scalar_one_or_none()
+
+        if current_sprint:
+            current_sprint_number = current_sprint.sprint_number
+            # If we are before the start_date, day is 0
+            if today < current_sprint.start_date:
+                current_day = 0
+            else:
+                current_day = (today - current_sprint.start_date).days + 1
+        else:
+            current_sprint_number = 1
+            current_day = 0
+            
     except Exception:
         current_sprint_number = 1
         current_day = 0

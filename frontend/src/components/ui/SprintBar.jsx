@@ -1,4 +1,4 @@
-export function SprintBar({ sprintNumber, points, maxPoints = 80, isActive }) {
+export function SprintBar({ sprintNumber, points, maxPoints = 100, isActive }) {
   const percentage = Math.min((points / maxPoints) * 100, 100);
   
   return (

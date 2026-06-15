@@ -1,4 +1,4 @@
-export function TaskCard({ taskNumber, label, emoji, checked, onChange, disabled }) {
+export function TaskCard({ taskNumber, label, description, emoji, checked, onChange, disabled }) {
   return (
     <div
       className={`
@@ -13,11 +13,12 @@ export function TaskCard({ taskNumber, label, emoji, checked, onChange, disabled
     >
       <span className="text-2xl">{emoji}</span>
       <div className="flex-1 text-right">
-        <p className="text-xs font-medium text-brand-muted">Task {taskNumber}</p>
-        <p className="text-base font-bold text-brand-dark">{label}</p>
+        <p className="text-[10px] font-bold text-brand-gold uppercase tracking-wider mb-0.5">Task {taskNumber}</p>
+        <p className="text-sm font-bold text-brand-dark leading-tight">{label}</p>
+        {description && <p className="text-xs text-brand-muted mt-1 leading-relaxed">{description}</p>}
       </div>
       <div className={`
-        w-6 h-6 rounded-full border-2 flex items-center justify-center
+        w-6 h-6 rounded-full border-2 flex items-center justify-center flex-shrink-0
         ${checked ? 'bg-brand-teal border-brand-teal' : 'border-gray-300'}
       `}>
         {checked && <span className="text-white text-xs">✓</span>}

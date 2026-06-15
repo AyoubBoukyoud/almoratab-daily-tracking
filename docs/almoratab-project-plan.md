@@ -268,13 +268,13 @@ CREATE TABLE users (
 ```sql
 CREATE TABLE sprints (
     id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    sprint_number   INTEGER NOT NULL UNIQUE,  -- 1 through 5
+    sprint_number   INTEGER NOT NULL UNIQUE,  -- 1, 2, 3...
     start_date      DATE NOT NULL,
     end_date        DATE NOT NULL,
     is_active       BOOLEAN NOT NULL DEFAULT FALSE,
     created_at      TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
 
-    CONSTRAINT sprint_number_range CHECK (sprint_number BETWEEN 1 AND 5),
+    CONSTRAINT sprint_number_positive CHECK (sprint_number >= 1),
     CONSTRAINT valid_dates CHECK (end_date > start_date)
 );
 ```
