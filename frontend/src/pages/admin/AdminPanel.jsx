@@ -83,7 +83,7 @@ export default function AdminPanel() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-50">
-                {users.map((user, index) => (
+                {(Array.isArray(users) ? users : []).map((user, index) => (
                   <tr key={user.id} className="hover:bg-brand-gold/5 transition-colors">
                     <td className="px-6 py-4 whitespace-nowrap">
                       {index === 0 && <span className="text-2xl">🥇</span>}
@@ -130,7 +130,7 @@ export default function AdminPanel() {
           </div>
           
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {sprints.map((sprint) => (
+            {(Array.isArray(sprints) ? sprints : []).map((sprint) => (
               <SprintLeaderboard 
                 key={sprint.id}
                 sprintId={sprint.id}
@@ -150,9 +150,9 @@ export default function AdminPanel() {
            </div>
            
            <div className="p-6 space-y-8">
-              {liveSessions.length === 0 && <p className="text-center text-brand-muted italic">No live sessions created yet.</p>}
+              {(!Array.isArray(liveSessions) || liveSessions.length === 0) && <p className="text-center text-brand-muted italic">No live sessions created yet.</p>}
               
-              {liveSessions.map((session) => (
+              {(Array.isArray(liveSessions) ? liveSessions : []).map((session) => (
                 <div key={session.id} className="space-y-4">
                   <div className="flex items-center gap-4 border-b border-brand-border/20 pb-2">
                     <span className="bg-brand-gold text-brand-dark text-[10px] font-black px-2 py-0.5 rounded-md uppercase">
@@ -163,8 +163,8 @@ export default function AdminPanel() {
                   </div>
                   
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                    {users.map((user) => {
-                      const isAttendee = session.attendees?.find(a => a.user_id === user.id);
+                    {(Array.isArray(users) ? users : []).map((user) => {
+                      const isAttendee = Array.isArray(session.attendees) && session.attendees.find(a => a.user_id === user.id);
                       return (
                         <div key={user.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-100">
                           <span className="text-sm font-medium text-brand-dark truncate pr-2">{user.full_name.split(' ')[0]}</span>
