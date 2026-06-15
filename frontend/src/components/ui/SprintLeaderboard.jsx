@@ -43,11 +43,11 @@ export function SprintLeaderboard({ sprintId, sprintNumber, isCurrent = false })
       </div>
       
       <div className="divide-y divide-gray-50 max-h-60 overflow-y-auto">
-        {leaderboard.length === 0 && (
+        {(Array.isArray(leaderboard) ? leaderboard : []).length === 0 && (
           <div className="p-8 text-center text-brand-muted italic text-xs">No activity yet</div>
         )}
         
-        {leaderboard.map((user, index) => (
+        {(Array.isArray(leaderboard) ? leaderboard : []).map((user, index) => (
           <div key={user.id} className="px-4 py-2 flex items-center justify-between hover:bg-gray-50 transition-colors">
             <div className="flex items-center gap-3">
               <span className={`w-5 h-5 flex items-center justify-center rounded-full text-[10px] font-bold ${index === 0 ? 'bg-brand-gold text-brand-dark' : 'bg-gray-100 text-brand-muted'}`}>
