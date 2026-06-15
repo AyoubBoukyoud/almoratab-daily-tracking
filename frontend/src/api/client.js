@@ -1,11 +1,11 @@
 import axios from 'axios';
 import { useAuthStore } from '../store/authStore';
 
-// In production, we use the relative path '/api' which is handled by Vercel Rewrites
-// In development, we use the explicit localhost URL
-const baseURL = import.meta.env.VITE_API_URL 
-  ? import.meta.env.VITE_API_URL 
-  : (import.meta.env.MODE === 'production' ? '/api' : 'http://127.0.0.1:8000');
+// In production, we prefer the relative path '/api' which is handled by Vercel Rewrites
+// This avoids Mixed Content issues and CORS problems.
+const baseURL = import.meta.env.MODE === 'production'
+  ? '/api'
+  : (import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000');
 
 const client = axios.create({
   baseURL,
