@@ -14,7 +14,8 @@ from uuid import UUID
 
 router = APIRouter(prefix="/sprints", tags=["sprints"])
 
-@router.get("/", response_model=List[SprintOut])
+@router.get("", response_model=List[SprintOut])
+@router.get("/", response_model=List[SprintOut], include_in_schema=False)
 async def list_sprints(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user)

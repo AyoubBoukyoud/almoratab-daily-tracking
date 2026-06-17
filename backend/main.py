@@ -26,6 +26,7 @@ app = FastAPI(
     description="Backend API for tracking daily task progress, sprints, and user scores.",
     version="1.0.0",
     lifespan=lifespan,
+    redirect_slashes=False,
 )
 
 # CORS configuration
