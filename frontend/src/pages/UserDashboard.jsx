@@ -22,18 +22,19 @@ export default function UserDashboard() {
 
   const fetchData = async () => {
     setIsLoading(true);
-    try {
-      const [statsData, todayData, sprintData, allSprintsData] = await Promise.all([
-        getMyStats(),
-        getTodayStatus(),
-        getCurrentSprint(),
-        getSprints()
-      ]);
-      setStats(statsData);
+    const [statsResult, todayResult, sprintResult, allSprintsResult] = await Promise.allSettled([
+      getMyStats(),
+      getTodayStatus(),
+      getCurrentSprint(),
+      getSprints()
+    ]);
+
+    if (statsResult.status === 'fulfilled') setStats(statsResult.value);
+    else console.error('Stats fetch failed:', statsResult.reason);
+
+    if (todayResult.status === 'fulfilled') {
+      const todayData = todayResult.value;
       setTodaySub(todayData);
-      setCurrentSprint(sprintData);
-      setAllSprints(allSprintsData);
-      
       if (todayData.submitted) {
         setTasks({
           task1: todayData.submission.task1_done,
@@ -41,12 +42,17 @@ export default function UserDashboard() {
           task3: todayData.submission.task3_done,
         });
       }
-    } catch (error) {
-      console.error("Failed to fetch dashboard data", error);
-      toast.error("Failed to load your progress");
-    } finally {
-      setIsLoading(false);
+    } else {
+      console.error('Today status fetch failed:', todayResult.reason);
     }
+
+    if (sprintResult.status === 'fulfilled') setCurrentSprint(sprintResult.value);
+    else console.error('Current sprint fetch failed:', sprintResult.reason);
+
+    if (allSprintsResult.status === 'fulfilled') setAllSprints(allSprintsResult.value);
+    else console.error('All sprints fetch failed:', allSprintsResult.reason);
+
+    setIsLoading(false);
   };
 
   useEffect(() => {

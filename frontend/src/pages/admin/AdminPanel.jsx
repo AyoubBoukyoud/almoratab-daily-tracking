@@ -15,21 +15,33 @@ export default function AdminPanel() {
 
   const fetchData = async () => {
     setIsLoading(true);
-    try {
-      const [leaderboardData, sessionsData, sprintsData] = await Promise.all([
-        getLeaderboard(),
-        getLiveSessions(),
-        getSprints()
-      ]);
-      setUsers(leaderboardData);
-      setLiveSessions(sessionsData);
-      setSprints(sprintsData);
-    } catch (err) {
-      console.error(err);
-      toast.error("Failed to load admin data");
-    } finally {
-      setIsLoading(false);
+    // Fetch independently so one failure doesn't block the others
+    const [leaderboardResult, sessionsResult, sprintsResult] = await Promise.allSettled([
+      getLeaderboard(),
+      getLiveSessions(),
+      getSprints()
+    ]);
+
+    if (leaderboardResult.status === 'fulfilled') {
+      setUsers(leaderboardResult.value);
+    } else {
+      console.error('Leaderboard fetch failed:', leaderboardResult.reason);
     }
+
+    if (sessionsResult.status === 'fulfilled') {
+      setLiveSessions(sessionsResult.value);
+    } else {
+      console.error('Live sessions fetch failed:', sessionsResult.reason);
+    }
+
+    if (sprintsResult.status === 'fulfilled') {
+      setSprints(sprintsResult.value);
+    } else {
+      console.error('Sprints fetch failed:', sprintsResult.reason);
+      toast.error("Failed to load sprint leaderboards");
+    }
+
+    setIsLoading(false);
   };
 
   useEffect(() => {
