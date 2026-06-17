@@ -94,9 +94,15 @@ def run_migrations_online() -> None:
     """Run migrations in 'online' mode.
     We use a sync engine here to bypass asyncpg/PgBouncer issues.
     """
+    connect_args = {}
+    if settings.APP_ENV != "development":
+        # Supabase requires SSL in production
+        connect_args["sslmode"] = "require"
+
     connectable = create_engine(
         sync_url,
         poolclass=pool.NullPool,
+        connect_args=connect_args,
     )
 
     with connectable.connect() as connection:

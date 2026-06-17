@@ -23,6 +23,8 @@ async def login(
     token_response, refresh_token = await authenticate_user(db, payload)
 
     # Set refresh token as HTTP-only cookie
+    # SameSite=Lax works because Vercel rewrites make API calls same-origin.
+    # Secure=True in production since Vercel serves over HTTPS.
     cookie_expires = settings.REFRESH_TOKEN_EXPIRE_DAYS * 24 * 60 * 60
     response.set_cookie(
         key="refresh_token",
@@ -31,7 +33,7 @@ async def login(
         max_age=cookie_expires,
         expires=cookie_expires,
         secure=settings.APP_ENV == "production",
-        samesite="none" if settings.APP_ENV == "production" else "lax",
+        samesite="lax",
         path="/"
     )
     return token_response

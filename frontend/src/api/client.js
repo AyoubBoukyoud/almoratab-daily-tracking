@@ -11,6 +11,25 @@ const client = axios.create({
   baseURL,
   headers: { 'Content-Type': 'application/json' },
   withCredentials: true,
+  timeout: 30000, // 30s timeout — HuggingFace Spaces can be slow on cold start
+});
+
+// Retry interceptor: handle HuggingFace Spaces cold starts (502/503/504/timeout)
+client.interceptors.response.use(undefined, async (error) => {
+  const config = error.config;
+  if (!config || config._retryCount >= 2) return Promise.reject(error);
+
+  const isRetryable =
+    !error.response || // network error / timeout
+    [502, 503, 504].includes(error.response.status); // HF Spaces waking up
+
+  if (isRetryable && !config.url?.includes('/auth/login')) {
+    config._retryCount = (config._retryCount || 0) + 1;
+    const delay = config._retryCount * 3000; // 3s, 6s
+    await new Promise((r) => setTimeout(r, delay));
+    return client(config);
+  }
+  return Promise.reject(error);
 });
 
 // Request interceptor: attach bearer token to headers
