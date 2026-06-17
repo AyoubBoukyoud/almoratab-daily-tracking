@@ -47,11 +47,11 @@ async def submit_tasks(
             detail="You have already submitted tasks for today."
         )
 
-    # 4. Calculate points
+    # 4. Calculate points (2 + 2 + 3 = 7 per day max)
     points_earned = 0
     if payload.task1_done: points_earned += 2
     if payload.task2_done: points_earned += 2
-    if payload.task3_done: points_earned += 2
+    if payload.task3_done: points_earned += 3
 
     # 5. Create submission record
     submission = TaskSubmission(

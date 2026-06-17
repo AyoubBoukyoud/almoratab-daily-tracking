@@ -119,7 +119,7 @@ export default function UserDetail() {
                     <div key={sprint.sprint_number} className="border-b border-white/10 pb-3 last:border-0">
                       <div className="flex justify-between items-center mb-1">
                         <span className="font-bold">Sprint {sprint.sprint_number}</span>
-                        <span className="text-brand-gold font-black">{sprint.total} / 80</span>
+                        <span className="text-brand-gold font-black">{sprint.total} / 100</span>
                       </div>
                       <div className="flex gap-4 text-[10px] text-white/60 font-medium uppercase tracking-tighter">
                         <span>Tasks: {sprint.task_points}</span>

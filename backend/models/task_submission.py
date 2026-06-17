@@ -9,9 +9,10 @@ class TaskSubmission(Base):
     __table_args__ = (
         UniqueConstraint("user_id", "submission_date", name="unique_submission"),
         CheckConstraint(
-            "points_earned = ((CASE WHEN task1_done THEN 1 ELSE 0 END) + "
-            "(CASE WHEN task2_done THEN 1 ELSE 0 END) + "
-            "(CASE WHEN task3_done THEN 1 ELSE 0 END)) * 2",
+            "points_earned = "
+            "(CASE WHEN task1_done THEN 2 ELSE 0 END) + "
+            "(CASE WHEN task2_done THEN 2 ELSE 0 END) + "
+            "(CASE WHEN task3_done THEN 3 ELSE 0 END)",
             name="valid_points"
         ),
     )

@@ -107,7 +107,7 @@ export default function UserDashboard() {
           <div className="flex justify-between items-end">
             <div>
               <h2 className="text-xl font-playfair font-bold text-brand-dark">Today's Missions</h2>
-              <p className="text-sm text-brand-muted">Monday – Saturday • 2 pts per task</p>
+              <p className="text-sm text-brand-muted">Monday – Saturday • 7 pts per day</p>
             </div>
             {isSunday && (
               <span className="px-3 py-1 bg-brand-gold/20 text-brand-gold text-xs font-bold rounded-full uppercase tracking-wider">
