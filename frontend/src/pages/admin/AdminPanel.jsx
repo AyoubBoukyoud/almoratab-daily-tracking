@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { AdminLayout } from '../../components/layout/AdminLayout';
-import { getLeaderboard, getLiveSessions, validateLiveAttendance } from '../../api/admin';
+import { getLeaderboard, getLiveSessions, validateLiveAttendance, devalidateLiveAttendance } from '../../api/admin';
 import { getSprints } from '../../api/sprints';
 import { SprintLeaderboard } from '../../components/ui/SprintLeaderboard';
 import { Link } from 'react-router-dom';
@@ -53,9 +53,22 @@ export default function AdminPanel() {
     try {
       await validateLiveAttendance(sessionId, userId);
       toast.success("Attendance validated! +8 pts awarded");
-      fetchData(); // Refresh everything
+      fetchData();
     } catch (error) {
       toast.error(error.response?.data?.detail || "Validation failed");
+    } finally {
+      setValidatingId(null);
+    }
+  };
+
+  const handleDevalidate = async (sessionId, userId) => {
+    setValidatingId(`${sessionId}-${userId}`);
+    try {
+      await devalidateLiveAttendance(sessionId, userId);
+      toast.success("Attendance removed, points reset");
+      fetchData();
+    } catch (error) {
+      toast.error(error.response?.data?.detail || "Devalidation failed");
     } finally {
       setValidatingId(null);
     }
@@ -181,10 +194,15 @@ export default function AdminPanel() {
                         <div key={user.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-100">
                           <span className="text-sm font-medium text-brand-dark truncate pr-2">{user.full_name.split(' ')[0]}</span>
                           {isAttendee ? (
-                            <span className="text-brand-teal text-xs font-bold flex items-center gap-1">
+                            <button
+                              onClick={() => handleDevalidate(session.id, user.id)}
+                              disabled={validatingId === `${session.id}-${user.id}`}
+                              className="flex items-center gap-1 px-2 py-1 bg-brand-teal/10 hover:bg-red-100 text-brand-teal hover:text-red-600 text-[10px] font-bold rounded transition-colors disabled:opacity-50 group"
+                            >
                               <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd"></path></svg>
-                              Validated
-                            </span>
+                              <span className="group-hover:hidden">Validated</span>
+                              <span className="hidden group-hover:inline">Remove</span>
+                            </button>
                           ) : (
                             <button
                               onClick={() => handleValidate(session.id, user.id)}

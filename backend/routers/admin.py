@@ -174,3 +174,27 @@ async def validate_live_attendance(
             detail="Integrity constraint violated: validation already exists"
         )
     return attendance
+
+@router.delete("/live-sessions/{session_id}/validate/{user_id}")
+async def devalidate_live_attendance(
+    session_id: UUID,
+    user_id: UUID,
+    current_admin: User = Depends(require_admin),
+    db: AsyncSession = Depends(get_db)
+):
+    result = await db.execute(
+        select(LiveAttendance).where(
+            LiveAttendance.live_session_id == session_id,
+            LiveAttendance.user_id == user_id
+        )
+    )
+    attendance = result.scalar_one_or_none()
+    if not attendance:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="No attendance record found for this user/session"
+        )
+
+    await db.delete(attendance)
+    await db.commit()
+    return {"detail": "Attendance removed, points reset"}

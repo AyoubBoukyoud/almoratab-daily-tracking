@@ -39,3 +39,8 @@ export const validateLiveAttendance = async (sessionId, userId) => {
   const response = await client.post(`/admin/live-sessions/${sessionId}/validate/${userId}`);
   return response.data;
 };
+
+export const devalidateLiveAttendance = async (sessionId, userId) => {
+  const response = await client.delete(`/admin/live-sessions/${sessionId}/validate/${userId}`);
+  return response.data;
+};
