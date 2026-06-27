@@ -108,13 +108,20 @@ export default function AdminPanel() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-50">
-                {(Array.isArray(users) ? users : []).map((user, index) => (
+                {(() => {
+                  // Rank by points value (not array position) so tied users share the same badge.
+                  // All users with the top score get 🥇, the second distinct score 🥈, the third 🥉.
+                  const safeUsers = Array.isArray(users) ? users : [];
+                  const distinctScores = [...new Set(safeUsers.map((u) => u.total_points))].sort((a, b) => b - a);
+                  return safeUsers.map((user) => {
+                    const tier = distinctScores.indexOf(user.total_points);
+                    return (
                   <tr key={user.id} className="hover:bg-brand-gold/5 transition-colors">
                     <td className="px-6 py-4 whitespace-nowrap">
-                      {index === 0 && <span className="text-2xl">🥇</span>}
-                      {index === 1 && <span className="text-2xl">🥈</span>}
-                      {index === 2 && <span className="text-2xl">🥉</span>}
-                      {index > 2 && <span className="text-brand-muted font-bold ml-2">{index + 1}</span>}
+                      {tier === 0 && <span className="text-2xl">🥇</span>}
+                      {tier === 1 && <span className="text-2xl">🥈</span>}
+                      {tier === 2 && <span className="text-2xl">🥉</span>}
+                      {tier > 2 && <span className="text-brand-muted font-bold ml-2">{tier + 1}</span>}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <p className="font-bold text-brand-dark">{user.full_name}</p>
@@ -141,7 +148,9 @@ export default function AdminPanel() {
                       </Link>
                     </td>
                   </tr>
-                ))}
+                    );
+                  });
+                })()}
               </tbody>
             </table>
           </div>

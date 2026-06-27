@@ -106,7 +106,12 @@ export default function UserDashboard() {
         <section className="space-y-4">
           <div className="flex justify-between items-end">
             <div>
-              <h2 className="text-xl font-playfair font-bold text-brand-dark">Today's Missions</h2>
+              <div className="flex items-center gap-3 flex-wrap">
+                <h2 className="text-xl font-playfair font-bold text-brand-dark">Today's Missions</h2>
+                <span className="text-sm font-medium text-brand-muted">
+                  {new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
+                </span>
+              </div>
               <p className="text-sm text-brand-muted">Monday – Saturday • 7 pts per day</p>
             </div>
             {isSunday && (

@@ -84,3 +84,64 @@ User Credentials (DEFINITIVE LIST):
   │ Meriem Makoudi       │ meriem@almoratab.ma   │ meriem336    │
   │ Nadia Bouhafoura     │ nadia@almoratab.ma    │ nadia414     │
   └──────────────────────┴───────────────────────┴──────────────┘
+- 1) Présence au premier live = 8 pts chacune
+  INSERT INTO live_attendance
+    (id, user_id, live_session_id, validated_by, points_awarded, validated_at)
+  SELECT
+    gen_random_uuid(),
+    p.id,
+    ls.id,
+    adm.id,
+    8,
+    now()
+  FROM users p
+  CROSS JOIN (SELECT id FROM users WHERE email = 'admin@almoratab.ma' LIMIT 1) adm
+  CROSS JOIN (
+    SELECT ls.id
+    FROM live_sessions ls
+    JOIN sprints s ON s.id = ls.sprint_id
+    WHERE s.sprint_number = 1 AND ls.session_number = 1
+    LIMIT 1
+  ) ls
+  WHERE p.email IN (
+    'bouchra@almoratab.ma','fairouz@almoratab.ma','fatima.a@almoratab.ma',
+    'fatima.z@almoratab.ma','karima@almoratab.ma','meriem@almoratab.ma','nadia@almoratab.ma'
+  )
+  ON CONFLICT (user_id, live_session_id) DO NOTHING;
+
+
+  -- 2) 6 jours de tâches (15→20 juin), 7 pts/jour
+  --    Bouchra : task3 non faite le 16/06 (=> 4 pts ce jour-là)
+  INSERT INTO task_submissions
+    (id, user_id, sprint_id, submission_date, task1_done, task2_done, task3_done, points_earned, submitted_at)
+  SELECT
+    gen_random_uuid(),
+    p.id,
+    s.id,
+    d::date,
+    true,                                                                    -- task1 (2 pts)
+    true,                                                                    -- task2 (2 pts)
+    NOT (p.email = 'bouchra@almoratab.ma' AND d::date = '2026-06-16'),       -- task3 (3 pts) sauf Bouchra le 16
+    CASE WHEN p.email = 'bouchra@almoratab.ma' AND d::date = '2026-06-16'
+         THEN 4 ELSE 7 END,
+    now()
+  FROM users p
+  CROSS JOIN (SELECT id FROM sprints WHERE sprint_number = 1 LIMIT 1) s
+  CROSS JOIN generate_series('2026-06-15'::date, '2026-06-20'::date, '1 day') d
+  WHERE p.email IN (
+    'bouchra@almoratab.ma','fairouz@almoratab.ma','fatima.a@almoratab.ma',
+    'fatima.z@almoratab.ma','karima@almoratab.ma','meriem@almoratab.ma','nadia@almoratab.ma'
+  )
+  ON CONFLICT (user_id, submission_date) DO NOTHING;
+
+  Totals this produces:
+  - 6 participantes : 8 (live) + 6 × 7 = 50 pts
+  - Bouchra Salil : 8 (live) + 5 × 7 + 1 × 4 = 47 pts
+
+  Quick check after running:
+  SELECT u.full_name,
+         (SELECT COALESCE(SUM(points_awarded),0) FROM live_attendance la WHERE la.user_id = u.id) +
+         (SELECT COALESCE(SUM(points_earned),0)  FROM task_submissions ts WHERE ts.user_id = u.id) AS total
+  FROM users u
+  WHERE u.role <> 'admin'
+  ORDER BY total DESC;
