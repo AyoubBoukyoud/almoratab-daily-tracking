@@ -20,6 +20,16 @@ export default function UserDashboard() {
 
   const isSunday = new Date().getDay() === 0;
 
+  // Detect a "between sprints" break: today falls outside every sprint's window.
+  // During a break, submissions are locked (the backend also rejects them).
+  const now = new Date();
+  const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+  const inSprintWindow = (Array.isArray(allSprints) ? allSprints : []).some(
+    (s) => todayStr >= s.start_date && todayStr <= s.end_date
+  );
+  const isBreak = !isLoading && !inSprintWindow;
+  const isLocked = isSunday || isBreak;
+
   const fetchData = async () => {
     setIsLoading(true);
     const [statsResult, todayResult, sprintResult, allSprintsResult] = await Promise.allSettled([
@@ -114,7 +124,11 @@ export default function UserDashboard() {
               </div>
               <p className="text-sm text-brand-muted">Monday – Saturday • 7 pts per day</p>
             </div>
-            {isSunday && (
+            {isBreak ? (
+              <span className="px-3 py-1 bg-brand-teal/20 text-brand-teal text-xs font-bold rounded-full uppercase tracking-wider">
+                On Break ⏸️
+              </span>
+            ) : isSunday && (
               <span className="px-3 py-1 bg-brand-gold/20 text-brand-gold text-xs font-bold rounded-full uppercase tracking-wider">
                 Rest Day 🌿
               </span>
@@ -129,7 +143,7 @@ export default function UserDashboard() {
               description="Planifier et structurer ma journée"
               checked={tasks.task1}
               onChange={(val) => setTasks(prev => ({ ...prev, task1: val }))}
-              disabled={new Date().getDay() === 0 || todaySub.submitted || isSubmitting}
+              disabled={isLocked || todaySub.submitted || isSubmitting}
             />
             <TaskCard 
               taskNumber={2}
@@ -138,7 +152,7 @@ export default function UserDashboard() {
               description="Renforcer mon énergie et ma Discipline"
               checked={tasks.task2}
               onChange={(val) => setTasks(prev => ({ ...prev, task2: val }))}
-              disabled={new Date().getDay() === 0 || todaySub.submitted || isSubmitting}
+              disabled={isLocked || todaySub.submitted || isSubmitting}
             />
             <TaskCard 
               taskNumber={3}
@@ -147,11 +161,11 @@ export default function UserDashboard() {
               description="Créer une avancée concrète dans mon projet"
               checked={tasks.task3}
               onChange={(val) => setTasks(prev => ({ ...prev, task3: val }))}
-              disabled={new Date().getDay() === 0 || todaySub.submitted || isSubmitting}
+              disabled={isLocked || todaySub.submitted || isSubmitting}
             />
           </div>
 
-          {!todaySub.submitted && new Date().getDay() !== 0 && (
+          {!todaySub.submitted && !isLocked && (
             <button
               onClick={handleSubmit}
               disabled={isSubmitting}
@@ -161,6 +175,12 @@ export default function UserDashboard() {
             </button>
           )}
 
+          {isBreak && (
+            <div className="p-4 bg-brand-teal/10 border border-brand-teal/20 text-brand-teal rounded-xl text-center italic">
+              "Sprint 3 starts September 21st. Rest, reflect, and come back stronger — submissions are paused until then."
+            </div>
+          )}
+
           {todaySub.submitted && (
             <div className="p-4 bg-brand-teal text-white rounded-xl flex items-center justify-center gap-3 shadow-inner">
               <span className="text-xl">✨</span>
@@ -168,7 +188,7 @@ export default function UserDashboard() {
             </div>
           )}
 
-          {new Date().getDay() === 0 && !todaySub.submitted && (
+          {isSunday && !isBreak && !todaySub.submitted && (
             <div className="p-4 bg-brand-gold/10 border border-brand-gold/20 text-brand-teal rounded-xl text-center italic">
               "Take a break, recharge your energy. Submissions resume on Monday!"
             </div>

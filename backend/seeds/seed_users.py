@@ -70,9 +70,18 @@ async def seed_data():
         else:
             print(f"Database already has {len(existing_users)} users. Skipping user seeding.")
 
-        # 3. Seed/Update Sprints (5 sprints of 14 days each, starting 2026-06-15)
+        # 3. Seed/Update Sprints (14 days each).
+        # Sprints 1 & 2 run back-to-back from 2026-06-15; Sprint 3 is delayed to
+        # 2026-09-21, and Sprint 4 cascades right after it.
         SPRINT1_START = date(2026, 6, 15)  # Monday
-        EXPECTED_SPRINTS = 4
+        SPRINT3_START = date(2026, 9, 21)  # Monday (delayed)
+        SPRINT_START_DATES = [
+            SPRINT1_START,                      # Sprint 1
+            SPRINT1_START + timedelta(days=14), # Sprint 2
+            SPRINT3_START,                      # Sprint 3 (delayed)
+            SPRINT3_START + timedelta(days=14), # Sprint 4 (cascades after Sprint 3)
+        ]
+        EXPECTED_SPRINTS = len(SPRINT_START_DATES)
 
         result = await session.execute(select(Sprint).order_by(Sprint.sprint_number))
         existing_sprints = result.scalars().all()
@@ -81,7 +90,7 @@ async def seed_data():
         sprint_objects = []
         for i in range(EXPECTED_SPRINTS):
             s_num = i + 1
-            start = SPRINT1_START + timedelta(days=i * 14)
+            start = SPRINT_START_DATES[i]
             end = start + timedelta(days=13)
             is_active = (s_num == 1)
 
@@ -110,32 +119,32 @@ async def seed_data():
 
         await session.flush()  # Flush to get generated IDs for new sprints
 
-        # 4. Seed Live Sessions (2 per sprint, skip if already exist)
+        # 4. Seed Live Sessions (2 per sprint). Session dates are derived from the
+        # sprint start date, so refresh them if the sprint was rescheduled.
         for sprint in sprint_objects:
             result = await session.execute(
                 select(LiveSession).where(LiveSession.sprint_id == sprint.id)
             )
-            existing_sessions = result.scalars().all()
-            if existing_sessions:
-                continue
+            existing_sessions = {s.session_number: s for s in result.scalars().all()}
 
             session1_date = sprint.start_date + timedelta(days=2)  # Wednesday
-            session1 = LiveSession(
-                sprint_id=sprint.id,
-                session_number=1,
-                session_date=session1_date,
-                title=f"Sprint {sprint.sprint_number} - Session 1"
-            )
             session2_date = sprint.start_date + timedelta(days=9)  # Wednesday next week
-            session2 = LiveSession(
-                sprint_id=sprint.id,
-                session_number=2,
-                session_date=session2_date,
-                title=f"Sprint {sprint.sprint_number} - Session 2"
-            )
-            session.add(session1)
-            session.add(session2)
-            print(f"Seeding Live Sessions for Sprint {sprint.sprint_number} (Dates: {session1_date}, {session2_date})")
+            expected = {1: session1_date, 2: session2_date}
+
+            for s_num, s_date in expected.items():
+                if s_num in existing_sessions:
+                    existing = existing_sessions[s_num]
+                    if existing.session_date != s_date:
+                        existing.session_date = s_date
+                        print(f"Updated Live Session {s_num} for Sprint {sprint.sprint_number} -> {s_date}")
+                else:
+                    session.add(LiveSession(
+                        sprint_id=sprint.id,
+                        session_number=s_num,
+                        session_date=s_date,
+                        title=f"Sprint {sprint.sprint_number} - Session {s_num}"
+                    ))
+                    print(f"Seeding Live Session {s_num} for Sprint {sprint.sprint_number} -> {s_date}")
 
         await session.commit()
         print("--- SEEDING COMPLETED SUCCESSFULY ---")
